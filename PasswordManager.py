@@ -2,11 +2,11 @@ import json, os
 # Создать систему для поиска
 # Сделать DRY по всем блокам функций (сделав систему поиска облегчить поиск по словарям и спискам) 
 # {1 [2 {3 }3 ]2 }1 ----- [""]1 [0]2 [""]3
-# Export/Import оставить напоследок
 # ExistCheck добавить как один класс функций
 # Сделать удаление всей программы
 # Delete перенести в Edit
 # Сделать систему сохранений c разными data файлов
+# Export/Import оставить напоследок
 
 dir_path = str(os.getenv('LOCALAPPDATA')) + "\\Ramaif Programs\\" + "PasswordManager\\"
 
@@ -58,51 +58,53 @@ while not Loaded:
         print(System.data)
         Loaded = True
 
-def ShowDataInfo(user: System):
-    i = 0
-    Names = ["None"]
-    match user.platform:
-        case "0":
-            for name in System.data.keys():
-                i += 1
-                Names.append(name)
-                print(f"[{i}]", name)
+class Checker:
+    def Values(checking, userinput: str):
+        for name in checking.values():
+            if str.lower(userinput) == str.lower(name):
+                return True
 
-            print("0 - Создать новый",
-                "\nExit/Quit - Выйти из выбора")
-        case _:
-            for acc in range( len(System.data[user.platform]) ):
-                i += 1
-                name = System.data[user.platform][acc]["Username"]
-                print(f"Аккаунт [{i}]", name)
+        return False
+    
+    def Keys(checking, userinput: str):
+        for name in checking.keys():
+            if str.lower(userinput) == str.lower(name):
+                return True
 
-    return Names
+        return False
 
-def ExistCheckValues(checking, userinput: str):
-    for name in checking.values():
-        if str.lower(userinput) == str.lower(name):
-            return True
+    def DataInfo(user: System):
+        i = 0
+        Names = ["None"]
+        match user.platform:
+            case "0":
+                for name in System.data.keys():
+                    i += 1
+                    Names.append(name)
+                    print(f"[{i}]", name)
 
-    return False
-def ExistCheckKeys(checking, userinput: str):
-    for name in checking.keys():
-        if str.lower(userinput) == str.lower(name):
-            return True
+                print("0 - Создать новый",
+                    "\nExit/Quit - Выйти из выбора")
+            case _:
+                for acc in range( len(System.data[user.platform]) ):
+                    i += 1
+                    name = System.data[user.platform][acc]["Username"]
+                    print(f"Аккаунт [{i}]", name)
 
-    return False
+        return Names
 
 def UsernameCreate(user: System):
     while True:
         print("\nСоздаём нового пользователя")
         UserInput = input("Имя нового пользователя: ")
         
-        if ExistCheckValues(System.data[user.platform][user.account], UserInput):
+        if Checker.Values(System.data[user.platform][user.account], UserInput):
             print("\nДанный пользователь уже существует!\n")
-            ShowDataInfo(user)
+            Checker.DataInfo(user)
             break
         else:
             System.data[user.platform][user.account][user.option] = UserInput
-            ShowDataInfo(user)
+            Checker.DataInfo(user)
             System.SaveData(System)
             break
 
@@ -139,7 +141,7 @@ while True:
             while True:
                 user = System("0", 0, "")
                 PlatformFound = False
-                names = ShowDataInfo(user)
+                names = Checker.DataInfo(user)
 
                 UserInput = str.lower(input("Укажите платформу для привязки пароля: "))
                 try:
@@ -149,7 +151,7 @@ while True:
                         case "exit" | "quit":
                             break
                         case _:
-                            if ExistCheckValues(user, UserInput):
+                            if Checker.Values(user, UserInput):
                                 user.platform = UserInput
                                 PlatformFound = True
                 else:
@@ -157,7 +159,7 @@ while True:
                     match UserInput:
                         case i if i == 0:
                             UserInput = input("\nВыберите название для платформы: ")
-                            match ExistCheckKeys(System.data, UserInput):
+                            match Checker.Keys(System.data, UserInput):
                                 case True:
                                     print("\nДанная платформа уже существует!\n")
                                 case False:
